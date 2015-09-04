@@ -1,0 +1,45 @@
+<ng-form name="TicketPriceForm">
+
+
+	<div class="form-group form-group-sm" ng-class="{'has-error': TicketPriceForm.id.$invalid}">
+		<label for="ticketPrice_{{$index}}_id" class="col-sm-2 control-label">Id</label>
+
+		<div class="col-sm-10">
+			<input id="ticketPrice_{{$index}}_id" name="id" type="number" required class="form-control"
+				   ng-model="ticketPrice.id" placeholder="Enter the TicketPrice Id"/>
+		</div>
+	</div>
+
+    <div class="form-group" ng-class="{'has-error': TicketPriceForm.section.$invalid}">
+        <label for="section" class="col-sm-2 control-label">Section</label>
+        <div class="col-sm-10">
+        <select id="section" name="section" class="form-control" ng-model="ticketPrice.section" ng-options="section.name for section in show.venue.sections track by m.id" required >
+            <option value="">Choose a Section</option>
+        </select>
+        <span class="help-block error" ng-show="TicketPriceForm.section.$error.required">required</span>
+        </div>
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': TicketPriceForm.ticketCategory.$invalid}">
+        <label for="ticketCategory" class="col-sm-2 control-label">Ticket Category</label>
+        <div class="col-sm-10">
+        <select id="ticketCategory" name="ticketCategory" class="form-control" ng-model="ticketPrice.ticketCategory" ng-options="t.description for t in ticketCategorySelectionList track by t.id" required >
+            <option value="">Choose a Ticket Category</option>
+        </select>
+        <span class="help-block error" ng-show="TicketPriceForm.ticketCategory.$error.required">required</span>
+        </div>
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': TicketPriceForm.price.$invalid}">
+        <label for="price" class="col-sm-2 control-label">Price</label>
+        <div class="col-sm-10">
+            <input id="price" name="price" type="number" class="form-control" ng-model="ticketPrice.price" placeholder="Enter the TicketPrice Price">
+            <span class="help-block error" ng-show="TicketPriceForm.price.$error.number">not a number</span>
+        </div>
+    </div>
+
+	<button class="btn btn-sm btn-danger" ng-click="deleteTicketPrice(ticketPrice)" type="button"><i
+			class="fa fa-trash"></i> Delete Ticket Price
+	</button>
+
+</ng-form>

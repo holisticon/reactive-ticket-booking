@@ -1,0 +1,66 @@
+<header ng-switch on="isCreate">
+    <h3 ng-switch-when="true">Create a new Show</h3>
+    <h3 ng-switch-when="false">View or edit Show</h3>
+</header>
+<form id="ShowForm" name="ShowForm" class="form-horizontal" role="form">
+    <div ng-show="displayError" class="alert alert-danger">
+        <strong>Error!</strong> Something broke. Retry, or cancel and start afresh.
+    </div>
+
+	<div class="form-group" ng-class="{'has-error': ShowForm.id.$invalid}">
+		<label for="id" class="col-sm-2 control-label">Id</label>
+		<div id="idControls" class="col-sm-10">
+			<input id="id" name="id" type="number" required ng-disabled="!isCreate" class="form-control" ng-model="show.id" placeholder="Select an Id" />
+		</div>
+	</div>
+
+    <div class="form-group" ng-class="{'has-error': ShowForm.event.$invalid}">
+        <label for="event" class="col-sm-2 control-label">Event</label>
+        <div id="eventControls" class="col-sm-10">
+        <select id="event" name="event" class="form-control" ng-model="show.event" ng-options="e.name for e in eventSelectionList track by e.id" required >
+            <option value="">Choose a Event</option>
+        </select>
+        <span class="help-block error" ng-show="ShowForm.event.$error.required">required</span>
+        </div>
+    </div>
+
+	<div class="form-group" ng-class="{'has-error': ShowForm.venue.$invalid}">
+		<label for="venue" class="col-sm-2 control-label">Venue</label>
+		<div id="venueControls" class="col-sm-10">
+			<select id="venue" name="venue" class="form-control" ng-model="show.venue" ng-options="v.name for v in venueSelectionList track by v.id" required >
+				<option value="">Choose a Venue</option>
+			</select>
+			<span class="help-block error" ng-show="ShowForm.venue.$error.required">required</span>
+		</div>
+	</div>
+
+	<div class="form-group" ng-class="{'has-error': VenueForm.sections.$invalid}">
+		<label class="col-sm-2 control-label">Performances</label>
+	</div>
+
+
+	<ul class="list-group" >
+		<li class="list-group-item" ng-repeat="performance in show.performances track by $index"  ng-include src="'views/Show/performanceDetail.html'" ></li>
+	</ul>
+	<button class="btn btn-sm" ng-click="newPerformance()" type="button"><i class="fa fa-plus-circle"></i> New Performance</button>
+
+
+	<div class="form-group" ng-class="{'has-error': VenueForm.sections.$invalid}">
+		<label class="col-sm-2 control-label">Ticket Prices</label>
+	</div>
+
+	<ul class="list-group" >
+		<li class="list-group-item" ng-repeat="ticketPrice in show.ticketPrices track by $index"  ng-include src="'views/Show/ticketPriceDetail.html'" ></li>
+	</ul>
+	<button class="btn btn-sm" ng-click="newTicketPrice()" type="button"><i class="fa fa-plus-circle"></i> New TicketPrice</button>
+
+
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button id="saveShow" name="saveShow" class="btn btn-primary" ng-disabled="isClean() || ShowForm.$invalid" ng-click="save()"><span class="glyphicon glyphicon-ok-sign"></span> Save</button>
+            <button id="cancel" name="cancel" class="btn btn-default" ng-click="cancel()"><span class="glyphicon glyphicon-remove-sign"></span> Cancel</button>
+            <button id="deleteShow" name="deleteShow" class="btn btn-danger" ng-show="show.id" ng-click="remove()"><span class="glyphicon glyphicon-trash"></span> Delete</button>
+        </div>
+    </div>
+</form>

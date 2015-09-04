@@ -1,0 +1,27 @@
+
+
+<ng-form name="PerformanceForm">
+
+	<div class="form-group form-group-sm" ng-class="{'has-error': PerformanceForm.id.$invalid}">
+		<label for="performance_{{$index}}_id" class="col-sm-2 control-label">Id</label>
+
+		<div class="col-sm-10">
+			<input id="performance_{{$index}}_id" name="id" type="number" required class="form-control"
+				   ng-model="performance.id" placeholder="Enter the Perfomance Id"/>
+		</div>
+	</div>
+
+    <div class="form-group" ng-class="{'has-error': PerformanceForm.date.$invalid}">
+        <label for="performance_{{$index}}_date" class="col-sm-2 control-label">Date</label>
+        <div class="col-sm-10">
+			<input id="performance_{{$index}}_date" type="datetime" name="date" required class="form-control" ng-model="performance.date" placeholder="Enter the Date">
+            <span class="help-block error" ng-show="PerformanceForm.date.$error.required">required</span>
+            <span class="help-block error" ng-show="PerformanceForm.date.$error.datetimeFormat">does not match format "yyyy-MM-dd hh:mm:ss" (e.g. 2013-12-01 22:00:00)</span>
+        </div>
+    </div>
+
+	<button class="btn btn-sm btn-danger" ng-click="deletePerformance(performance)" type="button"><i
+			class="fa fa-trash"></i> Delete Performance
+	</button>
+
+</ng-form>

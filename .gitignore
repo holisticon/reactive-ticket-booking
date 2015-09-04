@@ -1,6 +1,6 @@
 bower_components/
 target
-native
+native/
 .DS_Store
 .faces-config.xml.faceside
 .faces-config.xml.jsfdia
