@@ -1,0 +1,29 @@
+<h2>
+    <span class="glyphicon glyphicon-check"></span> Your application is running.
+</h2>
+
+
+<div ng-repeat="node in nodes">
+    <h2>{{node}}</h2>
+
+
+	<epoch-live-line chart-class="category10" chart-height="200" chart-data="history[node]" chart-stream="nextEntries[node]" chart-axes="lineAxes">
+
+	</epoch-live-line>
+
+</div>
+
+
+
+
+<p>
+    <a target="_blank"
+        href="http://forge.jboss.org/docs/index.html">Documentation</a>
+    | <a target="_blank"
+        href="http://twitter.com/intent/tweet?text=I+just+built+and+deployed+a+webapp+using+%23Forge,+from+%23JBoss+-+Super+easy!+(+http://jboss.org/forge+)&via=JBossForge">Get Excited!</a><br /> <a target="_blank" href="http://jboss.org/forge"><br />
+        Forge Project</a> | <a target="_blank"
+        href="https://community.jboss.org/en/forge">User
+        Forums</a> | <a target="_blank"
+        href="https://issues.jboss.org/browse/FORGEPLUGINS">Report an issue</a>
+
+</p>

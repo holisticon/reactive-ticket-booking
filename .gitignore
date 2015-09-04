@@ -1,0 +1,11 @@
+bower_components/
+target
+native
+.DS_Store
+.faces-config.xml.faceside
+.faces-config.xml.jsfdia
+MANIFEST.MF
+.idea
+.project
+.settings
+.metadata
