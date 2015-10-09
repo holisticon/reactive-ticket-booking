@@ -1,0 +1,129 @@
+
+<div>
+<blockquote>
+	<p>Reactive Ticket Booking is a web application showcase that demonstrates how you can migrate classic JavaEE web applications onto the akka stack.</p>
+</blockquote>
+<h2><a id="Quickstart_2"></a>Quickstart</h2>
+<p>Run this template with <code>$ activator run</code> or <code>$ sbt run</code> and open your browser at <a href="http://localhost:8080/">http://localhost:8080/</a>. This starts your application as an single node cluster.</p>
+<p>Package it as docker image and run it in a container with <code>sbt docker:run</code>.</p>
+<h2><a id="Project_structure_8"></a>Project structure</h2>
+<p>This activator template contains three modules.</p>
+<ul>
+	<li><strong>web</strong>: Client web application in backbone.js/angular.js.</li>
+	<li><strong>app</strong>: Akka standalone application. Serves a RESTful backend and hosts the web application.</li>
+	<li><strong>stress</strong>: Contains test scenarios for <a href="http://gatling.io/#/">gatling</a>. These scenarios can be used to compare the runtime behavior of ReactiveTicketBooking and similar implementations.</li>
+</ul>
+</div>
+
+<div>
+<h2><a id="Scope_16"></a>Scope</h2>
+<p>Reactive Ticket Booking is a web application showcase that demonstrates how you can migrate classic JavaEE web applications onto the akka stack.</p>
+<p>It originates in the JBoss ticket monster and tries to stay API compatible such that we can compare both implementations in their runtime behaviour in the face of high load, partial failure and network partitions.</p>
+<p>This showcase demonstrates the following things:</p>
+<ul>
+	<li>How to build a reactive restful backend with <a href="http://doc.akka.io/docs/akka-stream-and-http-experimental/1.0/scala/http/">akka-http</a></li>
+	<li>How to build an angular frontend with sbt using webjars</li>
+	<li>How to deal with scalability, state and contention using <a href="http://doc.akka.io/docs/akka/2.4.0/scala/distributed-data.html">distributed-data</a>, <a href="http://doc.akka.io/docs/akka/2.4.0/scala/cluster-sharding.html">cluster-sharding</a> and <a href="http://doc.akka.io/docs/akka/2.4.0/scala/persistence.html">persistence</a>.</li>
+	<li>How to simulate stress scenarios against your backend with <a href="http://gatling.io/#/">gatling</a>.</li>
+</ul>
+</div>
+
+<div>
+<h2><a id="The_Domain_29"></a>The Domain</h2>
+<p>This activator template contains a ticket booking web application.
+	It allows visitors to find events and book tickets for the happening of an event.</p>
+<blockquote>
+	<p>TODO: Class/ER diagram here</p>
+</blockquote>
+<p>An event happening at a venue is called a show. An event can happen at different venues.
+	Each show can happen at different dates. We call the <em>happening</em> of a show at a time a <strong>performance</strong>.</p>
+<p>A venue can hold a limited number of visitors at once. In this domain, each venue consists of <em>sections</em>.
+	Each section contains a number of rows with a fixed row size. Each row has a number of seats. Thus a seat can be identified
+	by the venue, section, row- and seat number.</p>
+<p>It is a strict requirement that each seat can be booked for one performance once and only once.</p>
+<p>Since not all seats in a venue are equally good, the can have different ticket prices.</p>
+<p>There can also be discounts for different kind of visitors like children or students. Therefore we introduce <strong>ticket categories</strong>.
+	A show has <strong>ticket prices</strong> for each section and supported ticket category.</p>
+<p>A visitor can issue a <strong>booking request</strong> for a performance by providing a set of ticket requests
+	(each for a section and ticket category and a desired seat count for that section and ticket category).</p>
+<p>A successful booking request results in a <em>booking</em> that contains <strong>tickets</strong> and a total price. A ticket allows a visitor to take place on a seat at a venue at the date of the performance.</p>
+<p>A booking request can fail if there is at least one ticket request that cannot be satisfied (because the desired number of seats is no longer
+	available in the section).</p>
+<p>To ease visitor navigation, each event can be assigned to an <strong>event category</strong>. A visitor browses events grouped by this category.</p>
+<p>The web application allows <em>administrators</em> to create, edit and remove events, shows, sections, performances, ticket categories and event categories.</p>
+<p>The model does not (yet) cover:</p>
+<ul>
+	<li>Dealing with ticket cancellations by the visitor.</li>
+	<li>Dealing with performance or show cancellations by the organizer.
+		They can be deleted by administrators but there is no compensation action for already booked tickets.</li>
+</ul>
+</div>
+
+<div>
+<h2><a id="Data_representation_68"></a>Data representation</h2>
+<p>In a traditional enterprise application, the previously described model could be represented as relational database schema. This would have the nice property, that we can model integrity constraints (like referential integrity) and provide transactions we would need to satisfy the <em>book seat once</em> constraint.</p>
+<p>But this would also require our backend to talk to the database for each user request to fetch the most recent information about events, shows and so on.
+	This is necessary for bookings but maybe overkill for data that changes slowly (like all the data that can only be changed by administrators).
+	Our backend could also implement a cache - but then we would have the challenge to decide when and how this cache is invalidated - in the best case directly when an administrator changes the data - but these cache invalidation would have to be propagated back to the backend in a reliable fashion.</p>
+<p>This also means for seat reservations that, if kept in one table, there would be a single serialization point in our application - the database table lock. This is what we really want to avoid.</p>
+<p>So we basically have two sets of data:</p>
+<ul>
+	<li>
+		<p>data that (normally) does not change and is added slowly. They should be visible to the user as soon as possible - but small delays are not critical. Example: If an administrator adds a new event “Flying spaghetti monster on stage”, we want all our visitors to see this event eventually and as soon as possible. We further call these data <strong>facts</strong> (even if not appropriate). The amount of facts may grow but is always expected to fit into a backend’s ram.</p>
+	</li>
+	<li>
+		<p>data whose access must be serialized and that is modified at the rate of user interactions. In our model this would be the bookings and seat reservations. This is the part where we want to be scalable. The amount of data grows steadily and growth of this data pretty much renders our application/business successful.</p>
+	</li>
+</ul>
+<h3><a id="Facts_84"></a>Facts</h3>
+<p>Facts can be distributed as CRDTs via akka <a href="http://doc.akka.io/docs/akka/2.4.0/scala/distributed-data.html">distributed-data</a>. That means that each backend node can create or update a fact and this update will be automatically propagated to all other cluster members using akka’s cluster gossip mechanism. We use LWWMap (last write wins map) as CRDT-structure - so our fact <em>database</em> acts pretty much like a distributed cache. Thus we do not really make any guarantees over concurrent fact modification - only that all nodes will end in the same state. This is not so much a problem since the creation of facts can be coordinated between administrators.</p>
+<p>This setup makes it possible that each backend node can answer any non-booking related user requests locally, without further network interaction. New facts will be distributed to all cluster nodes eventually and with low latency.</p>
+<h3><a id="Sharded_persistent_actors_90"></a>Sharded persistent actors</h3>
+<p>Within a booking request, a visitor can book tickets for different sections of a venue for a performance. The <em>decision</em> over an booking request must therefore be made sequentially by something that keeps track over all reserved seats of a performance. This is the perfect use case for an actor: PerformanceBookingNode.</p>
+<p>To ensure that there exists only one single PerformanceBookingNode for a single performance in the cluster we use <a href="http://doc.akka.io/docs/akka/2.4.0/scala/cluster-sharding.html">cluster-sharding</a>. This allows an equal distribution of load or <em>responsibility</em> for performance bookings over the whole cluster.</p>
+<blockquote>
+	<p>Idea: In a spatial distributed deployment, the location of the performances venue could be used to co-locate the actor to a node that is closer to the venues location. This would reduce latency in deployment scenarios with higher intra-cluster latency under the assumption that visitors rather book tickets for venues where there are close to.</p>
+</blockquote>
+<p>We do not want our bookings to get lost when the cluster is, for whatever reason, going down. This is why whe use <a href="http://doc.akka.io/docs/akka/2.4.0/scala/persistence.html">akka persistence</a> to persist the change of seat reservations using event sourcing.</p>
+<p>Persisting the seat reservations also ensures that the cluster can easily recover from a partial failure. As soon as akka-cluster detects a defect node, it will relocate all PerformanceBookingNode from the failing node to another healthy cluster node. The revived PerformanceBookingNode can be recreated on the healthy node by simply replaying all persisted events (i.E. seat reservations).</p>
+<p>Akka cluster sharding uses the same mechanism to deal with re-balancing if the number of cluster nodes changes.</p>
+<p>Compared to our earlier RDMS implementation, our current serialization scope is no longer the table (the set of all seat reservations) but just a single performance. We are also prepared for elastic deployments where nodes come up and go offline at any speed.</p>
+<h2><a id="Implementation_Notes_106"></a>Implementation Notes</h2>
+<p>The single http entry point to the backend is the <a href="../app/src/main/scala/de/holisticon/showcase/ticketbooking/api/HttpApi.scala"><code>HttpApi</code> trait</a>. It serves all static content from the web module as well as from web jar dependencies and implements default exception handlers.</p>
+<p>The <a href="../app/src/main/scala/de/holisticon/showcase/ticketbooking/api/RestApi.scala"><code>RestApi</code> trait</a> defines the protocol for the frontend application and mimics the API of our original JavaEE backend application.</p>
+<h3><a id="Actors_and_Protocols_113"></a>Actors and Protocols</h3>
+<p>The protocols of most actors are defined on their companion object. If these protocol messages are meant to be used in a request/response fashion, they contain the senders actorRef as first parameter.</p>
+<p>This structure is a good practice to ease a future migration to akka typed. Each senderRef will then be replaced by a typed actorRef with the type argument of the desired response message type.</p>
+<h2><a id="Stress_Test_120"></a>Stress Test</h2>
+<p>You can stress test a ticket booking application.</p>
+<p>TODO: describe how to run against an arbitrary server</p>
+<p>To run the recorder simulations:</p>
+<pre><code>$ sbt it:test
+</code></pre>
+<p>To record your own simulations:</p>
+<pre><code>$ sbt startRecorder
+</code></pre>
+<p>More documentation: <a href="http://gatling.io/#/docs">gatling.io</a>.</p>
+</div>
+<div>
+<h2><a id="Run_on_AWS_BeanStalk_137"></a>Run on AWS BeanStalk</h2>
+<h3><a id="Deploy_your_docker_image_to_a_public_docker_registry_140"></a>Deploy your docker image to a public docker registry</h3>
+<p><strong>you can skip this step if yo just want to deploy the unmodified demo</strong></p>
+<p>ReactiveTicketBooking can be packaged as a docker container using <code>$sbt docker:publishLocal</code></p>
+<p>Please set up docker first!</p>
+<p>To run it on AWS BeanStalk you need to publish it to a public docker registry.</p>
+<p>In this guide we use <a href="https://bintray.com/docs/usermanual/docker/docker_workingwithdocker.html">BinTray as docker repository</a>
+	but you may choose to publish it somewhere else.</p>
+<p>After that you need to change the docker deploy repository in the <code>build.sbt</code>:</p>
+<pre><code>dockerRepository := Some(&quot;my-public-docker-registry.io),
+</code></pre>
+<p>Now you can run <code>sbt docker:deploy</code> to publish your docker image. Note that this step may consume a bunch of bandwidth and take some time.</p>
+<h3><a id="Publish_to_AWS_beanstalk_159"></a>Publish to AWS beanstalk</h3>
+<p>At first you need to change the <code>Dockerrun.aws.json</code> image according to your freshly deployed Image.</p>
+<p>Then log into the AWS console and
+	<a href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker_ecs.html">create a new ElasticBeanStalk application for a multi docker container</a>.
+	If asked for the application file, simply upload the <code>Dockerrun.aws.json</code> file.</p>
+<p><em>Note: You need to slect a AWS region that supports EC2 Container Cloud.</em></p>
+<p>Now give AWS some time and your Reactive Ticket Booking should soon be available on your selected <code>myapp.elastibeanstalk.com</code> address.</p>
+<p>You may now play around with autoscaling modes and monitoring to render your Reactive Ticket Booking undestroyable!</p>
+</div>
