@@ -90,7 +90,7 @@ This setup makes it possible that each backend node can answer any non-booking r
 
 ### Sharded persistent actors
 
-Within a booking request, a visitor can book tickets for different sections of a venue for a performance. The _decision_ over an booking request must therefore be made sequentially by something that keeps track over all reserved seats of a performance. This is the perfect use case for an actor: PerformanceBookingNode.
+Within a booking request, a visitor can book tickets for different sections of a venue for a performance. The _decision_ over an booking request must therefore be made sequentially by something that keeps track over all reserved seats of a single performance. This is the perfect use case for an actor: PerformanceBookingNode.
 
 To ensure that there exists only one single PerformanceBookingNode for a single performance in the cluster we use [cluster-sharding](http://doc.akka.io/docs/akka/2.4.0/scala/cluster-sharding.html). This allows an equal distribution of load or _responsibility_ for performance bookings over the whole cluster.
 

@@ -57,7 +57,7 @@ class MediaFetcher(private val materializer: Materializer) extends Actor with Ac
           entity.dataBytes.runFold(ByteString.empty)((akk, next) => akk ++ next).onSuccess {
             case bytes: ByteString =>
               log.debug(s"All bytes there. Now return to the sender and cache it!")
-              val strictEntity = Some(Strict(entity.contentType(), bytes))
+              val strictEntity = Some(Strict(entity.contentType, bytes))
               self ! AddToCache(originalUrl, strictEntity)
               lastSender ! strictEntity
           }

@@ -30,8 +30,7 @@ lazy val commonSettings = Seq(
 	)
 )
 
-lazy val akkaV = "2.4.0"
-lazy val akkaStreamV = "1.0"
+lazy val akkaV = "2.4.2-RC1"
 
 lazy val `reactive-ticket-booking-parent` =
 	(project in file(".")).aggregate(app, web, stress)
@@ -85,11 +84,11 @@ lazy val app = project
 
 
 		libraryDependencies ++= Seq(
-			"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaStreamV,
-			"com.typesafe.akka" %% "akka-stream-experimental" % akkaStreamV,
-			"com.typesafe.akka" %% "akka-http-core-experimental" % akkaStreamV,
-			"com.typesafe.akka" %% "akka-http-experimental" % akkaStreamV,
-			"com.typesafe.akka" %% "akka-stream-testkit-experimental" % akkaStreamV % "test",
+			"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaV,
+			"com.typesafe.akka" %% "akka-stream" % akkaV,
+			"com.typesafe.akka" %% "akka-http-core" % akkaV,
+			"com.typesafe.akka" %% "akka-http-experimental" % akkaV,
+			"com.typesafe.akka" %% "akka-stream-testkit" % akkaV % "test",
 			"com.typesafe.akka" %% "akka-actor" % akkaV,
 			"com.typesafe.akka" %% "akka-remote" % akkaV,
 			"com.typesafe.akka" %% "akka-cluster" % akkaV,
@@ -99,7 +98,7 @@ lazy val app = project
 			"com.typesafe.akka" %% "akka-distributed-data-experimental" % akkaV,
 			"com.typesafe.akka" %% "akka-persistence-query-experimental" % akkaV,
 			"com.typesafe.akka" %% "akka-persistence" % akkaV,
-			"de.heikoseeberger" %% "akka-sse" % "1.1.0",
+			"de.heikoseeberger" %% "akka-sse" % "1.6.1",
 			"ch.qos.logback" % "logback-classic" % "1.1.3",
 			"com.typesafe.akka" %% "akka-testkit" % akkaV % "test",
 			"org.specs2" %% "specs2" % "2.4.2" % "test",
