@@ -9,3 +9,4 @@ MANIFEST.MF
 .project
 .settings
 .metadata
+*.log

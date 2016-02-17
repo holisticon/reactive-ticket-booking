@@ -28,7 +28,6 @@ import scala.concurrent.{ Await, ExecutionContext }
 object Main {
 
   def main(args: Array[String]): Unit = {
-
     val tempDirectory = Files.createTempDirectory("reactive-ticket-booking-sigar").toFile
     tempDirectory.deleteOnExit()
     SigarProvisioner.provision(tempDirectory)
@@ -81,7 +80,7 @@ class Main(val config: Config) extends MediaFetcherAware
     case i @ Init(performanceId, _) ⇒ (performanceId.hashCode % 10).toString
   }
 
-  /** sharding configuration for [[PerformanceBookingNode]]s  **/
+  /** sharding configuration for PerformanceBookingNodes  **/
   lazy val performanceBookingRegion: ActorRef = ClusterSharding(system).start(
     typeName = "PerformanceBooking",
     entityProps = Props[PerformanceBookingNode](),

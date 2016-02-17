@@ -33,8 +33,8 @@ define("initializer", ["jquery"], function ($) {
 	$.ajaxSetup({cache:false});
     $('head').append('<link rel="stylesheet" href="webjars/bootstrap/3.3.5/dist/css/bootstrap.min.css" type="text/css" media="all"/>');
     $('head').append('<link rel="stylesheet" href="webjars/bootstrap/3.3.5/dist/css/bootstrap-theme.min.css" type="text/css" media="all"/>');
-    $('head').append('<link rel="stylesheet" href="css/screen.min.css" type="text/css" media="all"/>');
-    $('head').append('<link rel="stylesheet" href="webjars/font-awesome/4.4.0/css/font-awesome.min.css" type="text/css" media="all"/>');
+    $('head').append('<link rel="stylesheet" href="css/screen.css" type="text/css" media="all"/>');
+    $('head').append('<link rel="stylesheet" href="webjars/font-awesome/4.5.0/css/font-awesome.min.css" type="text/css" media="all"/>');
     $('head').append('<link href="http://fonts.googleapis.com/css?family=Rokkitt" rel="stylesheet" type="text/css">');
 });
 

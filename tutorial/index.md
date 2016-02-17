@@ -4,7 +4,7 @@
 
 Run this template with `$ activator run` or `$ sbt run` and open your browser at [http://localhost:8080/](http://localhost:8080/). This starts your application as an single node cluster.
 
-Package it as docker image and run it in a container with `sbt docker:run`.
+Package it as docker image with `sbt docker:publishLocal` and start it as a docker container with `docke run`.
 
 ## Project structure
 
@@ -124,13 +124,17 @@ You can stress test a ticket booking application.
 
 TODO: describe how to run against an arbitrary server
 
-To run the recorder simulations:
 
-    $ sbt it:test
+To run the recorder simulations:
+```
+	$ sbt 
+	> re-start
+	> stress/test
+```
 
 To record your own simulations:
 
-    $ sbt startRecorder
+    $ sbt stress/startRecorder
 
 More documentation: [gatling.io](http://gatling.io/#/docs).	
 
@@ -155,7 +159,7 @@ After that you need to change the docker deploy repository in the `build.sbt`:
 
 	dockerRepository := Some("my-public-docker-registry.io),
 
-Now you can run `sbt docker:deploy` to publish your docker image. Note that this step may consume a bunch of bandwidth and take some time.
+Now you can run `sbt docker:publish` to publish your docker image. Note that this step may consume a bunch of bandwidth and take some time.
 
 ### Publish to AWS beanstalk
 
@@ -170,4 +174,4 @@ _Note: You need to slect a AWS region that supports EC2 Container Cloud._
 
 Now give AWS some time and your Reactive Ticket Booking should soon be available on your selected `myapp.elastibeanstalk.com` address.
 
-You may now play around with autoscaling modes and monitoring to render your Reactive Ticket Booking undestroyable!
+You may now play around with auto-scaling modes and monitoring to render your Reactive Ticket Booking indestructible!

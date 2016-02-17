@@ -1,7 +1,3 @@
-import com.typesafe.sbt.SbtScalariform._
-import sbt.Keys._
-
-
 
 lazy val commonSettings = Seq(
 	organization := "de.holisticon.showcase",
@@ -30,59 +26,26 @@ lazy val commonSettings = Seq(
 	)
 )
 
-lazy val akkaV = "2.4.2-RC1"
+lazy val akkaV = "2.4.2"
 
-lazy val `reactive-ticket-booking-parent` =
-	(project in file(".")).aggregate(app, web, stress)
+/*lazy val root = (project in file("."))
+	.settings(name := "reactive-ticket-booking")
+	.aggregate(app, stress)
 	.settings(
-			run in Compile <<= run in Compile in app
-		)
+			run in Compile <<= run in Compile in app,
 
-
-lazy val web = project
-	.enablePlugins(SbtWeb)
-	.settings(commonSettings : _*)
-	.settings(
-		name := "reactive-ticket-booking-web",
-		libraryDependencies := Seq(
-	"org.webjars.bower" % "angular" % "1.4.5",
-	"org.webjars.bower" % "angular-route" % "1.4.5",
-	"org.webjars.bower" % "angular-resource" % "1.4.5",
-	"org.webjars.bower" % "epoch" % "0.6.0",
-	"org.webjars.bower" % "d3" % "3.5.6",
-	"org.webjars.bower" % "backbone" % "1.1.2" force(), //note :otherwise it pulls up underscore
-	"org.webjars.bower" % "bootstrap" % "3.3.5" exclude("org.webjars.bower", "jquery"),
-	"org.webjars.bower" % "jquery" % "2.1.4",
-	"org.webjars.bower" % "requirejs" % "2.1.20",
-	"org.webjars.bower" % "underscore" % "1.6.0" force(), //note: bumping this a minor higher breaks the ui. great stuff.
-	"org.webjars.bower" % "requirejs-text" % "2.0.14",
-	"org.webjars.bower" % "lazysizes" % "1.2.0",
-	"org.webjars" % "font-awesome" % "4.4.0"
-	),
-		autoScalaLibrary := false,
-		// sbt-web
-		//includeFilter in (Assets, gzip) := "*.html" || "*.css" || "*.js" || "*.svg",
-		includeFilter in(Assets, LessKeys.less) := "*.less",
-		LessKeys.compress in Assets := true
-
-		//(managedResources in Runtime) += (packageBin in Assets).value,
-
-		//WebKeys.packagePrefix in Assets := "public/",
 
 	)
+	*/
 
-lazy val app = project
-	.dependsOn(web)
-	.settings(name := "reactive-ticket-booking")
+lazy val `reactive-ticket-booking` = (project in file("."))
 	.settings(commonSettings : _*)
 	.enablePlugins(SbtNativePackager)
 	.enablePlugins(JavaAppPackaging)
 	.enablePlugins(DockerPlugin)
 	.enablePlugins(UniversalDeployPlugin)
 	.settings(
-
-
-
+		name := "reactive-ticket-booking",
 		libraryDependencies ++= Seq(
 			"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaV,
 			"com.typesafe.akka" %% "akka-stream" % akkaV,
@@ -98,14 +61,28 @@ lazy val app = project
 			"com.typesafe.akka" %% "akka-distributed-data-experimental" % akkaV,
 			"com.typesafe.akka" %% "akka-persistence-query-experimental" % akkaV,
 			"com.typesafe.akka" %% "akka-persistence" % akkaV,
-			"de.heikoseeberger" %% "akka-sse" % "1.6.1",
-			"ch.qos.logback" % "logback-classic" % "1.1.3",
+			"de.heikoseeberger" %% "akka-sse" % "1.6.3",
+			"ch.qos.logback" % "logback-classic" % "1.1.5",
 			"com.typesafe.akka" %% "akka-testkit" % akkaV % "test",
-			"org.specs2" %% "specs2" % "2.4.2" % "test",
-			"org.scala-lang" % "scala-compiler" % scalaVersion.value,
+			"org.specs2" %% "specs2-core" % "3.7.1" % "test",
 			"io.kamon" % "sigar-loader" % "1.6.6-rev002",
-			"org.slf4j" % "log4j-over-slf4j" % "1.7.12" % "runtime"),
-
+			"org.slf4j" % "log4j-over-slf4j" % "1.7.16" % "runtime",
+			"org.webjars.bower" % "angular" % "1.4.5",
+			"org.webjars.bower" % "angular-route" % "1.4.5",
+			"org.webjars.bower" % "angular-resource" % "1.4.5",
+			"org.webjars.bower" % "epoch" % "0.6.0",
+			"org.webjars.bower" % "d3" % "3.5.6",
+			"org.webjars.bower" % "backbone" % "1.1.2" force(), //note :otherwise it pulls up underscore
+			"org.webjars.bower" % "bootstrap" % "3.3.5" exclude("org.webjars.bower", "jquery"),
+			"org.webjars.bower" % "jquery" % "2.1.4",
+			"org.webjars.bower" % "requirejs" % "2.1.20",
+			"org.webjars.bower" % "underscore" % "1.6.0" force(), //note: bumping this a minor higher breaks the ui. great stuff.
+			"org.webjars.bower" % "requirejs-text" % "2.0.14",
+			"org.webjars.bower" % "lazysizes" % "1.2.0",
+			"org.webjars" % "font-awesome" % "4.5.0",
+			"io.gatling.highcharts" % "gatling-charts-highcharts" % "2.1.7" % "test",
+			"io.gatling" % "gatling-test-framework" % "2.1.7" % "test"
+		),
 
 		packageName in Docker := "holisticon/" + packageName.value,
 		version in Docker := version.value,
@@ -121,20 +98,36 @@ lazy val app = project
 
 		Revolver.settings,
 		// required for libraries
-		connectInput in run := true
+		connectInput in run := true,
+
+		addCommandAlias("node1", "~reStart -Dbooking.netty.port=2551 -Dbooking.http.port=8080"),
+		addCommandAlias("node2", "~reStart -Dbooking.netty.port=2552 -Dbooking.http.port=8081"),
+		addCommandAlias("node3", "~reStart -Dbooking.netty.port=2553 -Dbooking.http.port=8082")
 	)
 
-lazy val stress = project
-	.enablePlugins(GatlingPlugin)
+lazy val stress = (project in file("stress"))
 	.settings(commonSettings : _*)
+	.enablePlugins(GatlingPlugin)
 	.settings(
+		scalaVersion := "2.11.7",
+		javacOptions ++= List(
+			"-source", "1.8",
+			"-target", "1.8"
+		),
+		scalacOptions in Global ++= List(
+			"-unchecked",
+			"-deprecation",
+			"-language:_",
+			"-target:jvm-1.8",
+			"-encoding", "UTF-8",
+			"-Xlint",
+			"-Xfatal-warnings"
+		),
 		libraryDependencies ++= Seq(
 			"io.gatling.highcharts" % "gatling-charts-highcharts" % "2.1.7" % "test",
 			"io.gatling" % "gatling-test-framework" % "2.1.7" % "test",
 			"ch.qos.logback" % "logback-classic" % "1.1.3")
 	)
 
-addCommandAlias("node1", "~reStart -Dbooking.netty.port=2551 -Dbooking.http.port=8080")
-addCommandAlias("node2", "~reStart -Dbooking.netty.port=2552 -Dbooking.http.port=8081")
-addCommandAlias("node3", "~reStart -Dbooking.netty.port=2553 -Dbooking.http.port=8082")
 
+fork in run := true

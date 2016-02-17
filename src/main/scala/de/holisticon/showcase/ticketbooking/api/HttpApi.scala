@@ -19,9 +19,9 @@ trait HttpApi {
 
     handleExceptions(globalExceptionHandler) {
       path("health") { complete(HttpResponse(status = StatusCodes.NoContent)) } ~
-        path("") { getFromResource("META-INF/resources/webjars/reactive-ticket-booking-web/0.1/index.html") } ~
+        path("") { getFromResource("META-INF/public/index.html") } ~
         path("admin" ~ Slash.?) { redirect("/admin/app.html", StatusCodes.PermanentRedirect) } ~
-        getFromResourceDirectory("META-INF/resources/webjars/reactive-ticket-booking-web/0.1") ~
+        getFromResourceDirectory("META-INF/public") ~
         getFromResourceDirectory("META-INF/resources") ~
         pathPrefix("rest") { restApi }
     }
