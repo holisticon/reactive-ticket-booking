@@ -81,7 +81,7 @@ class Main(val config: Config) extends MediaFetcherAware
     case i @ Init(performanceId, _) ⇒ (performanceId.hashCode % 10).toString
   }
 
-  /** sharding configuration for [[PerformanceBookingNode]]s  **/
+  /** sharding configuration for PerformanceBookingNodes  **/
   lazy val performanceBookingRegion: ActorRef = ClusterSharding(system).start(
     typeName = "PerformanceBooking",
     entityProps = Props[PerformanceBookingNode](),

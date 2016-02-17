@@ -1,8 +1,3 @@
-import com.typesafe.sbt.SbtScalariform._
-import sbt.Keys._
-
-
-
 lazy val commonSettings = Seq(
 	organization := "de.holisticon.showcase",
 	organizationName := "Holisticon AG",
@@ -30,13 +25,18 @@ lazy val commonSettings = Seq(
 	)
 )
 
-lazy val akkaV = "2.4.2-RC1"
+lazy val akkaV = "2.4.2"
 
-lazy val `reactive-ticket-booking-parent` =
+lazy val `reactive-ticket-booking` =
 	(project in file(".")).aggregate(app, web, stress)
 	.settings(
-			run in Compile <<= run in Compile in app
-		)
+
+			run in Compile <<= run in Compile in app,
+					addCommandAlias("node1", "~reStart -Dbooking.netty.port=2551 -Dbooking.http.port=8080"),
+					addCommandAlias("node2", "~reStart -Dbooking.netty.port=2552 -Dbooking.http.port=8081"),
+					addCommandAlias("node3", "~reStart -Dbooking.netty.port=2553 -Dbooking.http.port=8082")
+
+	)
 
 
 lazy val web = project
@@ -57,7 +57,7 @@ lazy val web = project
 	"org.webjars.bower" % "underscore" % "1.6.0" force(), //note: bumping this a minor higher breaks the ui. great stuff.
 	"org.webjars.bower" % "requirejs-text" % "2.0.14",
 	"org.webjars.bower" % "lazysizes" % "1.2.0",
-	"org.webjars" % "font-awesome" % "4.4.0"
+	"org.webjars" % "font-awesome" % "4.5.0"
 	),
 		autoScalaLibrary := false,
 		// sbt-web
@@ -80,9 +80,6 @@ lazy val app = project
 	.enablePlugins(DockerPlugin)
 	.enablePlugins(UniversalDeployPlugin)
 	.settings(
-
-
-
 		libraryDependencies ++= Seq(
 			"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaV,
 			"com.typesafe.akka" %% "akka-stream" % akkaV,
@@ -98,14 +95,12 @@ lazy val app = project
 			"com.typesafe.akka" %% "akka-distributed-data-experimental" % akkaV,
 			"com.typesafe.akka" %% "akka-persistence-query-experimental" % akkaV,
 			"com.typesafe.akka" %% "akka-persistence" % akkaV,
-			"de.heikoseeberger" %% "akka-sse" % "1.6.1",
-			"ch.qos.logback" % "logback-classic" % "1.1.3",
+			"de.heikoseeberger" %% "akka-sse" % "1.6.3",
+			"ch.qos.logback" % "logback-classic" % "1.1.5",
 			"com.typesafe.akka" %% "akka-testkit" % akkaV % "test",
-			"org.specs2" %% "specs2" % "2.4.2" % "test",
-			"org.scala-lang" % "scala-compiler" % scalaVersion.value,
+			"org.specs2" %% "specs2-core" % "3.7.1" % "test",
 			"io.kamon" % "sigar-loader" % "1.6.6-rev002",
-			"org.slf4j" % "log4j-over-slf4j" % "1.7.12" % "runtime"),
-
+			"org.slf4j" % "log4j-over-slf4j" % "1.7.16" % "runtime"),
 
 		packageName in Docker := "holisticon/" + packageName.value,
 		version in Docker := version.value,
@@ -134,7 +129,7 @@ lazy val stress = project
 			"ch.qos.logback" % "logback-classic" % "1.1.3")
 	)
 
-addCommandAlias("node1", "~reStart -Dbooking.netty.port=2551 -Dbooking.http.port=8080")
-addCommandAlias("node2", "~reStart -Dbooking.netty.port=2552 -Dbooking.http.port=8081")
-addCommandAlias("node3", "~reStart -Dbooking.netty.port=2553 -Dbooking.http.port=8082")
 
+
+
+fork in run := true
